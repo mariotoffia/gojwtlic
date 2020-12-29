@@ -20,6 +20,12 @@ type GeneratorJWT struct {
 	clientSecret string
 }
 
+// NewGeneratorBuilder creates a new `GeneratorJWT` using `NewGenerator` and wraps it using
+// the `license.GeneratorBuilder` to allow for builder style configuration.
+func NewGeneratorBuilder(keys license.RSAKeypair, signing string) *license.GeneratorBuilder {
+	return license.NewGenerator(NewGenerator(keys, signing))
+}
+
 // NewGenerator creates a new `license.Generator`
 //
 // If not specify signing it tries to use sensible defaults. The signing is the
