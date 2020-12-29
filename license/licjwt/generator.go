@@ -66,7 +66,7 @@ func (g *GeneratorJWT) Issuer(iss string) *GeneratorJWT {
 // LicenseLength sets the default length gives "now + t = expires" in
 // unix 32 bit epoch format.
 func (g *GeneratorJWT) LicenseLength(t time.Duration) *GeneratorJWT {
-	g.licenselen = int64(t * time.Second)
+	g.licenselen = int64(t / time.Second)
 	return g
 }
 

@@ -15,21 +15,24 @@ func TestGenerateSingleFeature(t *testing.T) {
 		ClientID("valmatics2.x").
 		ClientSecret("SecretFromAWSCognito").
 		Issuer("https://api.valmatics.se/licmgr").
-		LicenseLength(time.Hour * 24 * 365 * 10 /*10 year*/)
+		LicenseLength(time.Hour * 24 * 365 * 10 /*~10 year*/)
 
 	license := generator.Create(
 		generator.CreateFeatureInfo().
 			Feature("simulator").
 			Feature("regulate").
 			Feature("ui").
+			Feature("settings").
 			WithSubject("hobbe.nisse@azcam.net").
+			/* add feature called settings for analog & digital in / out :: rw */
 			FeatureDetails(map[string]license.Feature{
 				"settings": &license.FeatureImpl{
-					Details: map[string]interface{}{
-						"AO": true,
-						"DO": true,
-						"AI": true,
-						"DI": true,
+					Claims: map[string]interface{}{
+						"access": "rw",
+						"ao":     true,
+						"do":     true,
+						"ai":     true,
+						"di":     true,
 					},
 				},
 			}),

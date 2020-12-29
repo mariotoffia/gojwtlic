@@ -71,9 +71,9 @@ type Feature interface {
 type FeatureImpl struct {
 	// Name of the feature
 	name string `json:"-"`
-	// Details contains detailed information where parts of the feature may be on and
+	// Claims contains detailed information where parts of the feature may be on and
 	// some parts are off or specific configuration of the feature such as compensation factors etc.
-	Details map[string]interface{} `json:"details"`
+	Claims map[string]interface{} `json:"claims"`
 }
 
 // Name returns the name of the feature.
@@ -90,8 +90,8 @@ func (fi *FeatureImpl) Name() string {
 func NewFeature(name string) *FeatureImpl {
 
 	return &FeatureImpl{
-		name:    name,
-		Details: map[string]interface{}{},
+		name:   name,
+		Claims: map[string]interface{}{},
 	}
 
 }
