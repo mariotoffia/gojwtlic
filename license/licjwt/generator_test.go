@@ -10,7 +10,7 @@ import (
 
 func TestGenerateSingleFeature(t *testing.T) {
 
-	generator := NewGenerator(NewKeys(4096), "RS256").
+	generator := license.NewGenerator(NewGenerator(NewKeys(4096), "RS256")).
 		Audience("https://api.valmatics.se").
 		ClientID("valmatics2.x").
 		ClientSecret("SecretFromAWSCognito").

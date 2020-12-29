@@ -52,34 +52,29 @@ func (g *GeneratorJWT) ClearError() {
 }
 
 // Audience sets the default audience
-func (g *GeneratorJWT) Audience(aud string) *GeneratorJWT {
+func (g *GeneratorJWT) Audience(aud string) {
 	g.audience = aud
-	return g
 }
 
 // Issuer sets the default issuer
-func (g *GeneratorJWT) Issuer(iss string) *GeneratorJWT {
+func (g *GeneratorJWT) Issuer(iss string) {
 	g.issuer = iss
-	return g
 }
 
 // LicenseLength sets the default length gives "now + t = expires" in
 // unix 32 bit epoch format.
-func (g *GeneratorJWT) LicenseLength(t time.Duration) *GeneratorJWT {
+func (g *GeneratorJWT) LicenseLength(t time.Duration) {
 	g.licenselen = int64(t / time.Second)
-	return g
 }
 
 // ClientID sets the default client id
-func (g *GeneratorJWT) ClientID(id string) *GeneratorJWT {
+func (g *GeneratorJWT) ClientID(id string) {
 	g.clientID = id
-	return g
 }
 
 // ClientSecret sets the default secret.
-func (g *GeneratorJWT) ClientSecret(secret string) *GeneratorJWT {
+func (g *GeneratorJWT) ClientSecret(secret string) {
 	g.clientSecret = secret
-	return g
 }
 
 // CreateFeatureInfo creates a `license.FeatureInfo` with default
