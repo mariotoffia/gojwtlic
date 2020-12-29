@@ -1,29 +1,7 @@
 package license
 
-// Generator do genereate licenses that is encoded into a JWT
-//
-// The JWT is defined in https://tools.ietf.org/html/rfc7797 and
-// it's best practices is defined in https://tools.ietf.org/html/rfc8725,
-// of the base RFC https://tools.ietf.org/html/rfc7519.
-type Generator interface {
-}
-
-// Validator can validate licenses
-type Validator interface {
-}
-
-// Info contains all license information
-type Info struct {
-	// ClientID is the OAuth 2.0 client id used to communicate with the cloud services
-	//
-	// Defined as "client_id" in https://www.rfc-editor.org/rfc/rfc8693.html#name-client_id-client-identifier
-	ClientID string `json:"client_id,omitempty"`
-	// ClientSecret is the OAuth 2.0 client secret used to communicate with the cloud services
-	//
-	// Defines as "client_secret" in the license and should never leave the system. If this is omitted, the
-	// system itself embeds the client secret and may only use ClientID. This is usually a cryptographic safe
-	// random with the client id uniquely identify a license owner or a group of licenses.
-	ClientSecret string `json:"client_secret,omitempty"`
+// BaseInfo is the base information block
+type BaseInfo struct {
 	// audience is the base address of the license / system resource  e.g. https://api.valmatics.com
 	//
 	// Defined as "aud" in https://tools.ietf.org/html/rfc7519
@@ -63,36 +41,74 @@ type Info struct {
 	//
 	// Defined as "jti" in https://tools.ietf.org/html/rfc7519.
 	LicenseID string `json:"jti,omitempty"`
+}
+
+// OauthInfo is OAuth 2.0 specific information that may be included in the license.
+type OauthInfo struct {
+	// ClientID is the OAuth 2.0 client id used to communicate with the cloud services
+	//
+	// Defined as "client_id" in https://www.rfc-editor.org/rfc/rfc8693.html#name-client_id-client-identifier
+	ClientID string `json:"client_id,omitempty"`
+	// ClientSecret is the OAuth 2.0 client secret used to communicate with the cloud services
+	//
+	// Defines as "client_secret" in the license and should never leave the system. If this is omitted, the
+	// system itself embeds the client secret and may only use ClientID. This is usually a cryptographic safe
+	// random with the client id uniquely identify a license owner or a group of licenses.
+	ClientSecret string `json:"client_secret,omitempty"`
+}
+
+// Feature is a single feature specification where it set under the a custom non standard claim.
+type Feature interface {
+	// Is the name of the feature. Each feature has a unique name and this name may be
+	// used in `FeatureInfo.Features`, hence only lowercase ascii a-z is allowed. For example
+	// "simulation" or "ui".
+	Name() string
+}
+
+// FeatureImpl is a default standard implementation of a `Feature`.
+type FeatureImpl struct {
+	// Name of the feature
+	name string `json:"-"`
+	// Details contains detailed information where parts of the feature may be on and
+	// some parts are off or specific configuration of the feature such as compensation factors etc.
+	Details map[string]interface{} `json:"details"`
+}
+
+// Name returns the name of the feature.
+func (fi *FeatureImpl) Name() string {
+	return fi.name
+}
+
+// NewStandardFeature creates a new standard `FeatureImpl` that may be added to
+// `FeatureInfo.FeatureMap`. The `FeatureInfo.Details` map is initialzed and can be
+// used to add details.
+//
+// If only a feature name is needed, use the `FeatureInfo.Features` to supply such. Only
+// use this if you want to control certain details of a feature.
+func NewStandardFeature(name string) *FeatureImpl {
+
+	return &FeatureImpl{
+		name:    name,
+		Details: map[string]interface{}{},
+	}
+
+}
+
+// FeatureInfo contains all license information including enabled features.
+type FeatureInfo struct {
+	BaseInfo
+	OauthInfo
+
 	// Features is a space separated string of the features that this license grants. For example "simulator regulation ui"
 	//
 	// If you need to be more specific which precise claims you grant the license use the
 	// Defines as "scope" in https://www.rfc-editor.org/rfc/rfc8693.html#name-scope-scopes-claim
 	Features string `json:"scope,omitempty"`
+	// FeatureMap contains name values of non standard claim features.
+	FeatureMap map[string] /*name*/ Feature `json:"features,omitempty"`
 }
 
-// LicImpl is compatible with the Generator and Validator interface
-//
-// Usually separated, but for this contrived example combined.
-type LicImpl struct {
-	keys RSAKeypair
-}
-
-// NewLicenseManager creates a new `Generator` & `Validator`
-func NewLicenseManager(keys RSAKeypair) *LicImpl {
-
-	if keys == nil {
-		panic("No keys specified")
-	}
-
-	return &LicImpl{
-		keys: keys,
-	}
-
-}
-
-// Generate will generate a new license.
-func (l *LicImpl) Generate(info Info) string {
-
-	//fmt.Sprintf("%v", claims)
-	return ""
+// Valid will return an error if the `FeatureInfo` is not valid
+func (fi *FeatureInfo) Valid() error {
+	return nil
 }

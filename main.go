@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/mariotoffia/gojwtlic/license"
+	"github.com/mariotoffia/gojwtlic/license/licjwt"
 )
 
 func main() {
-	k := license.KeysImpl{}
+	k := licjwt.KeysImpl{}
 	fmt.Printf("%v", k)
 }

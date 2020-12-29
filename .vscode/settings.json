@@ -4,6 +4,8 @@
         "Mörtvikens",
         "dgrijalva",
         "gojwtlic",
+        "licjwt",
+        "licutils",
         "mariotoffia",
         "rtvikens",
         "stretchr"
