@@ -8,6 +8,7 @@
         "licutils",
         "mariotoffia",
         "rtvikens",
-        "stretchr"
+        "stretchr",
+        "valmatics"
     ]
 }

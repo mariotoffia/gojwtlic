@@ -1,5 +1,7 @@
 package license
 
+import "fmt"
+
 // BaseInfo is the base information block
 type BaseInfo struct {
 	// audience is the base address of the license / system resource  e.g. https://api.valmatics.com
@@ -79,13 +81,13 @@ func (fi *FeatureImpl) Name() string {
 	return fi.name
 }
 
-// NewStandardFeature creates a new standard `FeatureImpl` that may be added to
+// NewFeature creates a new, default, `FeatureImpl` that may be added to
 // `FeatureInfo.FeatureMap`. The `FeatureInfo.Details` map is initialzed and can be
 // used to add details.
 //
 // If only a feature name is needed, use the `FeatureInfo.Features` to supply such. Only
 // use this if you want to control certain details of a feature.
-func NewStandardFeature(name string) *FeatureImpl {
+func NewFeature(name string) *FeatureImpl {
 
 	return &FeatureImpl{
 		name:    name,
@@ -111,4 +113,29 @@ type FeatureInfo struct {
 // Valid will return an error if the `FeatureInfo` is not valid
 func (fi *FeatureInfo) Valid() error {
 	return nil
+}
+
+// Feature adds a feature
+func (fi *FeatureInfo) Feature(name string) *FeatureInfo {
+
+	if len(fi.Features) == 0 {
+		fi.Features = name
+	} else {
+		fi.Features = fmt.Sprintf("%s %s", fi.Features, name)
+	}
+
+	return fi
+}
+
+// FeatureDetails replaces the `FeatureInfo.FeatureMap`
+func (fi *FeatureInfo) FeatureDetails(details map[string]Feature) *FeatureInfo {
+
+	fi.FeatureMap = details
+	return fi
+}
+
+// WithSubject sets the `BaseInfo.Subject`
+func (fi *FeatureInfo) WithSubject(sub string) *FeatureInfo {
+	fi.Subject = sub
+	return fi
 }
