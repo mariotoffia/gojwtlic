@@ -18,7 +18,7 @@ func TestLicenseScopeOk(t *testing.T) {
 	// Data document
 	data := `{
   "license": {
-    "scopes": "simulator regulate ui settings",
+    "scope": "simulator regulate ui settings",
     "features": {
       "settings": {
         "claims": {
@@ -32,10 +32,22 @@ func TestLicenseScopeOk(t *testing.T) {
     }
   }
 }`
+
 	// Input document
 	input := `{
   "method": "POST",
-  "claims": {"scopes": "simulator regulate ui settings master-of-puppets"},
+  "claims": {
+    "aud": "https://api.valmatics.se",
+    "iss": "https://api.valmatics.se/licmgr",
+    "sub": "hobbe.nisse@azcam.net",
+    "exp": 1927735782,
+    "iat": 1612375782,
+    "nbf": 1612375782,
+    "jti": "fcd2174b-664a-11eb-afe1-1629c910062f",
+    "client_id": "valmatics2.x",
+    "client_secret": "SecretFromAWSCognito",
+    "scope": "simulator regulate ui settings master-of-puppets"
+  },
   "path": ["license", "generate", "Kåge"]
 }`
 
@@ -52,8 +64,8 @@ func TestLicenseScopeOk(t *testing.T) {
 		input.method == "POST"
 		input.path = ["license","generate", sawmill]
 	
-		iscopes := scopes_to_set(input.claims.scopes)
-		lscopes := scopes_to_set(data.license.scopes)
+		iscopes := scopes_to_set(input.claims.scope)
+		lscopes := scopes_to_set(data.license.scope)
 		
 		filtered := lscopes - iscopes
 	
@@ -114,7 +126,7 @@ func TestLicenseScopeTooFew(t *testing.T) {
 	// Data document
 	data := `{
   "license": {
-    "scopes": "simulator regulate ui settings",
+    "scope": "simulator regulate ui settings",
     "features": {
       "settings": {
         "claims": {
@@ -131,7 +143,7 @@ func TestLicenseScopeTooFew(t *testing.T) {
 	// Input document
 	input := `{
   "method": "POST",
-  "claims": {"scopes": "simulator regulate settings master-of-puppets"},
+  "claims": {"scope": "simulator regulate settings master-of-puppets"},
   "path": ["license", "generate", "Kåge"]
 }`
 
@@ -148,8 +160,8 @@ func TestLicenseScopeTooFew(t *testing.T) {
 		input.method == "POST"
 		input.path = ["license","generate", sawmill]
 	
-		iscopes := scopes_to_set(input.claims.scopes)
-		lscopes := scopes_to_set(data.license.scopes)
+		iscopes := scopes_to_set(input.claims.scope)
+		lscopes := scopes_to_set(data.license.scope)
 		
 		filtered := lscopes - iscopes
 	

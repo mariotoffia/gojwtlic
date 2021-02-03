@@ -1,6 +1,6 @@
 {
   "license": {
-    "scopes": "simulator regulate ui settings",
+    "scope": "simulator regulate ui settings",
     "features": {
       "settings": {
         "claims": {

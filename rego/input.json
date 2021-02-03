@@ -1,7 +1,7 @@
 {
     "method": "POST",
     "claims": {
-        "scopes": "simulator regulate ui settings master-of-puppets"
+        "scope": "simulator regulate ui settings master-of-puppets"
     },
     "path": ["license","generate","Kåge"]
 }

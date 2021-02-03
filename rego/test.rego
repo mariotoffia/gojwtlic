@@ -9,8 +9,8 @@ allow_create {
     input.method == "POST"
     input.path = ["license","generate", sawmill]
 
-    iscopes := scopes_to_set(input.claims.scopes)
-    lscopes := scopes_to_set(data.license.scopes)
+    iscopes := scopes_to_set(input.claims.scope)
+    lscopes := scopes_to_set(data.license.scope)
     
     filtered := lscopes - iscopes
 
