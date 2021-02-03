@@ -1,0 +1,16 @@
+{
+  "license": {
+    "scopes": "simulator regulate ui settings",
+    "features": {
+      "settings": {
+        "claims": {
+          "access": "rw",
+          "ai": true,
+          "ao": true,
+          "di": true,
+          "do": true
+        }
+      }
+    }
+  }
+}

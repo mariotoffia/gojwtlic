@@ -1,6 +1,9 @@
 package license
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // BaseInfo is the base information block
 type BaseInfo struct {
@@ -138,4 +141,41 @@ func (fi *FeatureInfo) FeatureDetails(details map[string]Feature) *FeatureInfo {
 func (fi *FeatureInfo) WithSubject(sub string) *FeatureInfo {
 	fi.Subject = sub
 	return fi
+}
+
+// ToJSON will marshal the current `FeatureInfo` as _JSON_.
+func (fi *FeatureInfo) ToJSON() ([]byte, error) {
+
+	return json.Marshal(fi)
+
+}
+
+// FromJSON will unmarshal the _data_ into a populated `FeatureInfo`.
+//
+// This will overwrite the current `fi` instance pointer with the new `FeatureInfo`
+// instance.
+func (fi *FeatureInfo) FromJSON(data []byte) error {
+
+	if fi == nil {
+		return fmt.Errorf("json.RawMessage: UnmarshalJSON on nil pointer")
+	}
+
+	var fi2 FeatureInfo
+	if err := json.Unmarshal(data, &fi2); err != nil {
+
+		return err
+
+	}
+
+	*fi = fi2 // overwrite the current fi pointer
+	return nil
+}
+
+// ToJSONIndent will marshal the current `FeatureInfo` as _JSON_.
+//
+// This is same as `ToJSON` but do pretty formatting.
+func (fi *FeatureInfo) ToJSONIndent() ([]byte, error) {
+
+	return json.MarshalIndent(fi, "", " ")
+
 }
