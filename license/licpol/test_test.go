@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/open-policy-agent/opa/ast"
@@ -10,6 +12,96 @@ import (
 	"github.com/open-policy-agent/opa/util"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestError(t *testing.T) {
+
+	ctx := context.Background()
+
+	// Data document
+	data := `{
+		"skip": ["IDT", "IDT_"],
+		"report": ["ODT"],
+		"fail": ["RHCS", "RHCS_"],
+		"range": {
+			"IDT": [-100, 100],
+			"IDT_": [-100, 100],
+			"RHCS": [20, 200],
+			"RHCS_": [20, 200]
+		}
+}`
+
+	// Input document
+	input := `{
+		"generate": {
+			"IDT": 22,
+			"IDT_C1_O2": -656,
+			"IDT_C1_O3": 19.2,
+			"IDT_C1_O1": 22.2
+		},
+		"target": {
+			"IDT": 22,
+			"IDT_C1_O2": -656,
+			"IDT_C1_O3": "$error",
+			"ODT": "$error",
+			"IDT_C1_O1": 22.2
+		},
+		"target-errors": {
+			"IDT_C1_O3": "the error message",
+			"ODT": "the error message"
+		}
+}`
+
+	// Policy document
+	module := `package cbprovider
+
+	error_dp[dp] {
+		my := input.target[dp]
+		my == "$error"		
+	}`
+
+	var jsonData map[string]interface{}
+	var jsonInput map[string]interface{}
+
+	if err := util.UnmarshalJSON([]byte(data), &jsonData); err != nil {
+		panic(err)
+	}
+
+	if err := util.UnmarshalJSON([]byte(input), &jsonInput); err != nil {
+		panic(err)
+	}
+
+	// Manually create the storage layer. inmem.NewFromObject returns an
+	// in-memory store containing the supplied data.
+	store := inmem.NewFromObject(jsonData)
+
+	// Compile the module. The keys are used as identifiers in error messages.
+	compiler, err := ast.CompileModules(map[string]string{
+		"cbprovider": module,
+	})
+
+	// Create a new query that uses the compiled policy from above.
+	rego := rego.New(
+		rego.Query("data.cbprovider.error_dp"),
+		rego.Compiler(compiler),
+		rego.Input(jsonInput),
+		rego.Store(store),
+	)
+
+	// Run evaluation.
+	rs, err := rego.Eval(ctx)
+
+	if err != nil {
+		panic(err)
+	}
+
+	result, err := json.Marshal(rs)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(result))
+}
 
 func TestLicenseScopeOk(t *testing.T) {
 
