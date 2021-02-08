@@ -1,0 +1,17 @@
+{
+  "target": {
+    "IDT": 22,
+    "IDT_C1_O1": 22.2,
+    "IDT_C1_O2": 101,
+    "IDT_C1_O3": "$error",
+    "IDT_C1_O4": "$error",
+    "ODT": "$error",
+    "RHCS_C13_O44": "$error"
+  },
+  "target-errors": {
+    "IDT_C1_O3": "error message",
+    "IDT_C1_O4": "error message",
+    "ODT": "error message",
+    "RHCS_C13_O44": "error message"
+  }
+}

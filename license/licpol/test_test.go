@@ -19,44 +19,128 @@ func TestError(t *testing.T) {
 
 	// Data document
 	data := `{
-		"skip": ["IDT", "IDT_"],
-		"report": ["ODT"],
-		"fail": ["RHCS", "RHCS_"],
-		"range": {
-			"IDT": [-100, 100],
-			"IDT_": [-100, 100],
-			"RHCS": [20, 200],
-			"RHCS_": [20, 200]
-		}
+  "range": {"IDT**": [-100, 100], "RHCS**": [20, 200]},
+  "report": ["ODT", "IDT_*_O3"],
+  "skip": ["IDT", "IDT_**"]
 }`
 
 	// Input document
 	input := `{
-		"generate": {
-			"IDT": 22,
-			"IDT_C1_O2": -656,
-			"IDT_C1_O3": 19.2,
-			"IDT_C1_O1": 22.2
-		},
-		"target": {
-			"IDT": 22,
-			"IDT_C1_O2": -656,
-			"IDT_C1_O3": "$error",
-			"ODT": "$error",
-			"IDT_C1_O1": 22.2
-		},
-		"target-errors": {
-			"IDT_C1_O3": "the error message",
-			"ODT": "the error message"
-		}
+  "target": {
+    "IDT": 22,
+    "IDT_C1_O1": 22.2,
+    "IDT_C1_O2": 101,
+    "IDT_C1_O3": "$error",
+    "IDT_C1_O4": "$error",
+    "ODT": "$error",
+    "RHCS_C13_O44": "$error"
+  },
+  "target-errors": {
+    "IDT_C1_O3": "error message",
+    "IDT_C1_O4": "error message",
+    "ODT": "error message",
+    "RHCS_C13_O44": "error message"
+  }
 }`
 
 	// Policy document
 	module := `package cbprovider
 
-	error_dp[dp] {
+	# Errors to be skipped
+	# If present in report as well it will not be skipped
+	# (report overrides skip)
+	skip[dp] {
 		my := input.target[dp]
-		my == "$error"		
+		my == "$error"   
+		
+		matchSkip with input as {
+			   "dp": dp
+		}
+		
+		not matchReport with input as {
+			"dp": dp
+		}
+	}
+	
+	# Errors to be skipped when out of range
+	skip[dp] {
+		my := input.target[dp]
+		my != "$error"   
+		
+		matchSkip with input as {
+			   "dp": dp
+		}
+		
+		not matchReport with input as {
+			"dp": dp
+		}
+		
+		range := get_range(dp)
+		not in_range(my, range[0], range[1])    
+	}
+	
+	
+	# Errors to be reported
+	# If matches both in skip and report -> report overrides skip
+	report[dp] {
+		my := input.target[dp]
+		my == "$error"   
+		
+		matchReport with input as {
+			"dp": dp
+		}
+	}
+	
+	# Errors to be reported when out of range
+	report[dp] {
+		my := input.target[dp]
+		my != "$error"   
+		
+		matchReport with input as {
+			"dp": dp
+		}
+	
+		range := get_range(dp)
+		not in_range(my, range[0], range[1])
+	}
+	
+	
+	all_errors[dp] {
+		my := input.target[dp]
+		my == "$error"     
+	}
+	
+	all_errors[dp] {
+		my := input.target[dp]
+		my != "$error"
+		
+		range := get_range(dp)
+	
+		not in_range(my, range[0], range[1])
+	}
+	
+	in_range(num, low, high) {
+		num >= low
+		num <= high
+	}
+	
+	get_range(dp) = range {
+		some key
+		range := data.range[key]
+		
+		glob.match(key, ["_"], dp)
+	}
+	
+	matchSkip {
+		some i
+		data.skip[i]
+		glob.match(data.skip[i], ["_"], input.dp)
+	}
+	
+	matchReport {
+		some i
+		data.report[i]
+		glob.match(data.report[i], ["_"], input.dp)
 	}`
 
 	var jsonData map[string]interface{}
@@ -81,7 +165,7 @@ func TestError(t *testing.T) {
 
 	// Create a new query that uses the compiled policy from above.
 	rego := rego.New(
-		rego.Query("data.cbprovider.error_dp"),
+		rego.Query("data.cbprovider"),
 		rego.Compiler(compiler),
 		rego.Input(jsonInput),
 		rego.Store(store),
