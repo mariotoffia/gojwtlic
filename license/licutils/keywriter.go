@@ -15,7 +15,7 @@ import (
 // The name is prefixed onto the file names _name-private.pem_ and
 // _name-public.pem_.
 // If any error occurs it is returned.
-func WriteRSAKeys(keys license.RSAKeypair, name, fp string) error {
+func WriteRSAKeys(keys license.RSAKeyPair, name, fp string) error {
 
 	if keys == nil {
 		return fmt.Errorf("must specify keys to write")

@@ -157,7 +157,7 @@ func (fi *FeatureInfo) ToJSON() ([]byte, error) {
 func (fi *FeatureInfo) FromJSON(data []byte) error {
 
 	if fi == nil {
-		return fmt.Errorf("json.RawMessage: UnmarshalJSON on nil pointer")
+		return fmt.Errorf("FromJSON on nil pointer")
 	}
 
 	var fi2 FeatureInfo

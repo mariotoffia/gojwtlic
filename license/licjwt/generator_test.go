@@ -6,11 +6,14 @@ import (
 	"time"
 
 	"github.com/mariotoffia/gojwtlic/license"
+	"github.com/mariotoffia/gojwtlic/license/licjwt/licbuiltin"
 )
 
 func TestToJSONIndent(t *testing.T) {
 
-	generator := NewGeneratorBuilder(NewKeys(4096), "RS256").
+	generator := NewGeneratorBuilderWithSigner(
+		licbuiltin.NewSignCreator(licbuiltin.NewRSAKeys(4096), "RS256"),
+	).
 		Audience("https://api.valmatics.se").
 		ClientID("valmatics2.x").
 		ClientSecret("SecretFromAWSCognito").
@@ -45,7 +48,9 @@ func TestToJSONIndent(t *testing.T) {
 
 func TestGenerateSingleFeature(t *testing.T) {
 
-	generator := NewGeneratorBuilder(NewKeys(4096), "RS256").
+	generator := NewGeneratorBuilderWithSigner(
+		licbuiltin.NewSignCreator(licbuiltin.NewRSAKeys(4096), "RS256"),
+	).
 		Audience("https://api.valmatics.se").
 		ClientID("valmatics2.x").
 		ClientSecret("SecretFromAWSCognito").

@@ -1,11 +1,14 @@
 {
     "cSpell.words": [
+        "ECCSEGCG",
         "K",
         "Kåge",
         "M",
         "Måssmyren",
         "Mörtvikens",
         "RHCS",
+        "SECG",
+        "SEGCG",
         "Unregister",
         "cbprovider",
         "dgrijalva",
@@ -14,6 +17,8 @@
         "inmem",
         "iscopes",
         "jdata",
+        "jwtcreator",
+        "licbuiltin",
         "licjwt",
         "licpol",
         "licutils",

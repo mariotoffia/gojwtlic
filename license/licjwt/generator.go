@@ -3,15 +3,13 @@ package licjwt
 import (
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/mariotoffia/gojwtlic/license"
 )
 
 // GeneratorJWT is compatible with the Generator interface
 type GeneratorJWT struct {
-	keys         license.RSAKeypair
-	signing      string
+	creator      license.JWTSignerCreator
 	lasterr      error
 	audience     string
 	issuer       string
@@ -22,28 +20,28 @@ type GeneratorJWT struct {
 
 // NewGeneratorBuilder creates a new `GeneratorJWT` using `NewGenerator` and wraps it using
 // the `license.GeneratorBuilder` to allow for builder style configuration.
-func NewGeneratorBuilder(keys license.RSAKeypair, signing string) *license.GeneratorBuilder {
-	return license.NewGenerator(NewGenerator(keys, signing))
+func NewGeneratorBuilder() *license.GeneratorBuilder {
+	return license.NewGenerator(NewGenerator())
+}
+
+// NewGeneratorBuilderWithSigner is the same as `NewGeneratorBuilderWithSigner` but sets the
+// signer creator directly
+func NewGeneratorBuilderWithSigner(creator license.JWTSignerCreator) *license.GeneratorBuilder {
+
+	g := NewGenerator()
+	g.SetSignerCreator(creator)
+
+	return license.NewGenerator(g)
+
 }
 
 // NewGenerator creates a new `license.Generator`
 //
 // If not specify signing it tries to use sensible defaults. The signing is the
 // JWT compatible signing string such as "RS256".
-func NewGenerator(keys license.RSAKeypair, signing string) *GeneratorJWT {
+func NewGenerator() *GeneratorJWT {
 
-	if keys == nil {
-		panic("No keys specified")
-	}
-
-	if signing == "" {
-		signing = "RS256"
-	}
-
-	return &GeneratorJWT{
-		keys:    keys,
-		signing: signing,
-	}
+	return &GeneratorJWT{}
 
 }
 
@@ -117,17 +115,32 @@ func (g *GeneratorJWT) CreateFeatureInfo() *license.FeatureInfo {
 
 }
 
+// SetSignerCreator enables signing and generaton of a proper _JWT_ when
+// invoking the `Create(*FeatureInfo)` in this instance.
+func (g *GeneratorJWT) SetSignerCreator(creator license.JWTSignerCreator) {
+	g.creator = creator
+}
+
 // Create generates a new license.
 func (g *GeneratorJWT) Create(info *license.FeatureInfo) string {
 
-	token := jwt.NewWithClaims(jwt.GetSigningMethod(g.signing), info)
+	if nil == g.creator {
 
-	ss, err := token.SignedString(g.keys.PrivateKey())
+		data, err := info.ToJSON()
+
+		if err != nil {
+			g.lasterr = err
+			return ""
+		}
+
+		return string(data)
+	}
+
+	ss, err := g.creator.SignCreate(info)
 
 	if err != nil {
-
 		g.lasterr = err
-
+		return ""
 	}
 
 	return ss

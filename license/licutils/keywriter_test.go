@@ -4,13 +4,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mariotoffia/gojwtlic/license/licjwt"
+	"github.com/mariotoffia/gojwtlic/license/licjwt/licbuiltin"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestWritePublicAndPrivateKey(t *testing.T) {
 
-	keys := licjwt.NewKeys(4096)
+	keys := licbuiltin.NewRSAKeys(4096)
 
 	defer func() {
 
