@@ -36,7 +36,7 @@ func NewSignCreator(keys license.RSAKeyPair, signing string) license.JWTSignerCr
 
 // SignCreate will Create a _JWT_ from the _info_ parameter and sign it.
 // The returned string is a proper signed _JWT_.
-func (jc jwtcreator) SignCreate(info *license.FeatureInfo) (string, error) {
+func (jc *jwtcreator) SignCreate(info *license.FeatureInfo) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.GetSigningMethod(jc.signing), info)
 

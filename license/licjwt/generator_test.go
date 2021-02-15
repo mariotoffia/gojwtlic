@@ -11,9 +11,7 @@ import (
 
 func TestToJSONIndent(t *testing.T) {
 
-	generator := NewGeneratorBuilderWithSigner(
-		licbuiltin.NewSignCreator(licbuiltin.NewRSAKeys(4096), "RS256"),
-	).
+	generator := NewGeneratorBuilder().
 		Audience("https://api.valmatics.se").
 		ClientID("valmatics2.x").
 		ClientSecret("SecretFromAWSCognito").
