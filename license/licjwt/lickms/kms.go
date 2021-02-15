@@ -14,6 +14,8 @@ import (
 )
 
 // TODO: Use KMS to sign key: https://www.altostra.com/blog/asymmetric-jwt-signing-using-aws-kms
+// TODO: https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-kms.CfnKey.html
+// TODO: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-kms-key.html
 
 // KMSManager handles _AWS KMS_ communication.
 //
@@ -153,7 +155,7 @@ func (km *KMSManager) Sign(keyID string, kt license.KeyType, shabits int, pkcs b
 	return token
 }
 
-// Verify will take the same parameters except that it in addition takes a signature to verify using _KMS_.
+// Verify will take the same parameters, as with `Sign`, except that it in addition takes a signature to verify using _KMS_.
 //
 // Use this method if no public certificate is downloaded and the verification is done in the _KMS_ instead
 // of locally at backend or lambda etc.

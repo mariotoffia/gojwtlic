@@ -20,6 +20,7 @@
         "iscopes",
         "jdata",
         "jwtcreator",
+        "jwtlicense",
         "licbuiltin",
         "licjwt",
         "lickms",
