@@ -163,6 +163,8 @@ func TestError(t *testing.T) {
 		"cbprovider": module,
 	})
 
+	assert.Equal(t, nil, err)
+
 	// Create a new query that uses the compiled policy from above.
 	rego := rego.New(
 		rego.Query("data.cbprovider"),
@@ -274,6 +276,8 @@ func TestLicenseScopeOk(t *testing.T) {
 		"licpol.testing": module,
 	})
 
+	assert.Equal(t, nil, err)
+
 	// Create a new query that uses the compiled policy from above.
 	rego := rego.New(
 		rego.Query("data.example.allow_create"),
@@ -369,6 +373,8 @@ func TestLicenseScopeTooFew(t *testing.T) {
 	compiler, err := ast.CompileModules(map[string]string{
 		"licpol.testing": module,
 	})
+
+	assert.Equal(t, nil, err)
 
 	// Create a new query that uses the compiled policy from above.
 	rego := rego.New(

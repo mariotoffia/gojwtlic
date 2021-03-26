@@ -1,11 +1,91 @@
 package licpol
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 )
+
+// tag::prp[]
+
+// PolicyRetrievalPointChange is determining the change type in a `PolicyRetrievalPoint`
+type PolicyRetrievalPointChange int
+
+const (
+	// PolicyRetrievalPointChangeModuleAdded is set when a module has been added to the set
+	PolicyRetrievalPointChangeModuleAdded PolicyRetrievalPointChange = 1
+	// PolicyRetrievalPointChangeModuleRemovedis is set when a module has been removed from the set.
+	PolicyRetrievalPointChangeModuleRemoved PolicyRetrievalPointChange = 2
+)
+
+// PolicyRetrievalPointChangeFunc is invoked by a _PRP_ when a underlying change has occurred.
+type PolicyRetrievalPointChangeFunc func(p PolicyRetrievalPoint, module string, change PolicyRetrievalPointChange)
+
+// PolicyRetrievalPoint is a data source for policies where the `PolicyContext` uses
+// to load polices that are not manually registered.
+type PolicyRetrievalPoint interface {
+	// IsShareable determines if this instance may be shared by different contexts.
+	//
+	// This is often true to _PRPs_ that is static and loaded it's policies upon creation.
+	IsShareable() bool
+
+	// CanMutate specifies if this _PRP_ may mutate over time, i.e. after `Initialize`
+	// has been called.
+	//
+	// Even local data, such as local filesystem _PRP_ may mutate, if it is not loading
+	// *all* _policies_ directly.
+	CanMutate() bool
+
+	// HasRemoteDataSource is stating if this _PRP_ is getting it's policies from a remote
+	// datasource or if it's local e.g. embedded or filesystem.
+	HasRemoteDataSource() bool
+
+	/// Initialize gives the _PRP_ a chance to initialize, if not yet has done so.
+	//
+	// CAUTION: This initialization may not exceed several hundreds of microseconds!
+	//
+	// It the implementation needs to load all policies, do this before this function is called.
+	// If a caller specifies the _change_ function, the implementation is _REQUIRED_ to notify
+	// the _change_ function!
+	Initialize(c context.Context, change PolicyRetrievalPointChangeFunc)
+
+	// GetModules returns all it's modules (even if those are not yet loaded)
+	//
+	// If the provider do not on forehand knows the module names it has in it's domain
+	// get it reads from a datasource that is altering. If the _force_ is set to `true`
+	// it will do a scan and return those.
+	GetModuleNames(c context.Context, force bool) []string
+
+	// GetModule returns a module by it's name.
+	//
+	// If the module is not yet loaded, and the implementation supports dynamic loading
+	// it is _REQUIRED_ to try-load the module. If it fails, a empty module is returned.
+	GetModule(c context.Context, name string) string
+
+	// EvictModules will force the _PRP_ to unload the policies for specified modules
+	// if it can.
+	//
+	// This only applicable on _PRPs_ that `CanMutate` returns `true`.
+	EvictModules(modules []string)
+
+	// GetModules will get all modules that this _PRP_ is manageing.
+	//
+	// If the _force_ flag is set to `true`, and it is able to dynamically load, it is
+	// _REQUIRED_ to do a full scan and return *everything*.
+	//
+	// CAUTION: Since it may load vast amounts of policies if _force_ is set to `true`, hence use caution!!
+	GetModules(c context.Context, force bool) map[string]string
+
+	// Process is invoked when a `PolicyRetrievalPoint` cannot be executed in background. This gives the
+	//
+	// This gives the _PRP_ a small amount of time to do it's processing (if needed).
+	Process(c context.Context)
+}
+
+// end::prp[]
+// tag::policy-context[]
 
 // PolicyContext is a context where polices operates under. It supports
 // the notion of sub-context and hence local overrides in e.g policies may
@@ -33,6 +113,12 @@ type PolicyContext interface {
 	//
 	// If already registered, it will set the context in error state.
 	RegisterModule(name, module string) PolicyContext
+
+	// RegisterPRP registers one or more `PolicyRetrievalPoint`.
+	//
+	// All `PolicyRetrievalPoint.Initialize` function will be invoked and must not been invoked earlier!
+	RegisterPRP(c context.Context, p ...PolicyRetrievalPoint) PolicyContext
+
 	// CompleModuleSet will lookup modules that has been earlier registered using
 	// `RegisterModules` and create a single compilation of it. Since it is named,
 	// it will set the `PolicyContext` to error state if already compiled. The compiles may
@@ -50,12 +136,15 @@ type PolicyContext interface {
 	NewEval(options ...func(r *rego.Rego)) *rego.Rego
 }
 
+// end::policy-context[]
+
 // policyContext implements the `PolicyContext` interface.
 type policyContext struct {
 	err      error
 	parent   *policyContext
 	modules  map[string]string
 	compiled map[string]*ast.Compiler
+	prp      []PolicyRetrievalPoint
 }
 
 // New creates a new `PolicyContext` compatible instance.
@@ -65,6 +154,18 @@ func New() PolicyContext {
 		modules:  map[string]string{},
 		compiled: map[string]*ast.Compiler{},
 	}
+}
+
+func (pc *policyContext) RegisterPRP(c context.Context, p ...PolicyRetrievalPoint) PolicyContext {
+
+	for i := range p {
+
+		p[i].Initialize(c, nil)
+
+	}
+
+	pc.prp = append(pc.prp, p...)
+	return pc
 }
 
 // ClearError will clear any error state.
