@@ -36,12 +36,15 @@
         "oidrd",
         "oidwrt",
         "pctx",
+        "pepfunc",
+        "pmsg",
         "reeq",
         "rego",
         "replus",
         "rtvikens",
         "ssmyren",
         "stretchr",
+        "structs",
         "valmatics"
     ]
 }
